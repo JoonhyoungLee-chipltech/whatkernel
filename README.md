@@ -44,7 +44,94 @@ Install and run a one-kernel smoke test:
 ./install.sh --prefix /root --smoke
 ```
 
-## Quick Start
+## Codex Quick Start
+
+This repository is primarily intended for Codex users. After installation, ask Codex to run the skill directly:
+
+```text
+whatkernel dlcasmprinter
+```
+
+or:
+
+```text
+/whatkernel dlcasmprinter
+```
+
+Codex will use the installed skill at:
+
+```text
+/root/.codex/skills/whatkernel/SKILL.md
+```
+
+and run the local helper:
+
+```bash
+/root/bin/whatkernel dlcasmprinter
+```
+
+Codex should summarize:
+
+- candidate kernel count
+- top kernels by counter descending
+- output directory for full artifacts
+- compile failures, missing stats, or unknown-pass issues
+
+### Common Codex Requests
+
+Run a full pass scan:
+
+```text
+whatkernel dlcasmprinter
+```
+
+Run a quick smoke test:
+
+```text
+whatkernel dlcasmprinter --limit 1 --jobs 1 --top 5
+```
+
+Focus on kernels whose path/name contains a selector:
+
+```text
+whatkernel dlcmachinepipeliner --source gptq_gemm --jobs 1 --top 20
+```
+
+Keep raw stats JSON for deeper follow-up:
+
+```text
+whatkernel dlcasmprinter --artifacts stats --top 20
+```
+
+Re-summarize an existing run without recompiling:
+
+```text
+whatkernel dlcasmprinter --out-dir /tmp/whatkernel/dlcasmprinter/<run-id> --summarize-existing
+```
+
+Ask Codex to inspect the generated report:
+
+```text
+Open the report from the last whatkernel run and summarize the top candidate kernels.
+```
+
+### Useful Options
+
+- `--source <selector>`: limit to source paths, stems, or basenames containing the selector. Can be repeated.
+- `--limit <N>`: process only the first `N` selected kernel sources; useful for smoke tests.
+- `--jobs <N>`: parallel compile jobs. Default is `8`; use `1` for easier debugging.
+- `--top <N>`: number of top candidate kernels to print. Default is `20`.
+- `--artifacts summary`: keep only report and structured summary files. This is the default.
+- `--artifacts stats`: also keep raw stats JSON files.
+- `--artifacts debug`: keep commands, stdout, stderr, assembly, and stats for every processed kernel.
+- `--out-dir <dir>`: write or re-read a specific run directory.
+- `--summarize-existing`: regenerate summary/report from an existing output directory without recompiling.
+- `--refresh-auto`: refresh auto-discovered pass metadata before running.
+- `--llvm <dir>`, `--repo <dir>`, `--build-dir <dir>`: override default checkout/build paths.
+
+## Direct CLI Usage
+
+Codex normally runs these commands for you, but direct shell usage is also supported.
 
 List registered passes:
 
@@ -122,7 +209,7 @@ pass 'dlc-peephole' has no STATISTIC counters; stats-only whatkernel requires at
 
 There is no assembly diff fallback mode.
 
-## Codex Skill
+## Installed Codex Skill Files
 
 `install.sh` installs the Codex skill by default:
 
@@ -131,7 +218,7 @@ There is no assembly diff fallback mode.
 /root/.codex/skills/whatkernel/agents/openai.yaml
 ```
 
-This lets Codex route requests such as `whatkernel dlcasmprinter` to `/root/bin/whatkernel` and summarize the result.
+If Codex does not pick up the skill immediately, start a new Codex session after installation.
 
 ## Development Checks
 
