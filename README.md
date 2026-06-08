@@ -1,12 +1,22 @@
 # whatkernel
 
-`whatkernel` ranks DLC custom kernels hit by a DLC/LLVM compiler pass using LLVM `STATISTIC(...)` counters.
+`whatkernel` is a Codex-friendly helper for answering:
 
-It is intended for quick pass bring-up, rollout planning, and follow-up kernel analysis.
+> Which DLC custom kernels does this compiler pass hit?
 
-## Requirements
+It replays DLC custom-kernel compile commands with LLVM stats enabled, then ranks kernels by the pass' `STATISTIC(...)` counters.
 
-The default installation and command paths assume this layout:
+Primary example pass:
+
+```text
+/root/LLVM/llvm/lib/Target/DLC/DLCMachineCSE.cpp
+```
+
+Use it through Codex first; direct CLI usage is also available.
+
+## Install
+
+Default team layout:
 
 ```text
 /root/LLVM
@@ -16,26 +26,12 @@ The default installation and command paths assume this layout:
 /root/DLC_Custom_Kernel/dlc_kernels
 ```
 
-Required tools:
-
-```text
-python3
-ninja
-cmake  # only needed if the DLC custom kernel build tree must be configured
-```
-
-## Install
+Install:
 
 ```bash
 git clone https://github.com/JoonhyoungLee-chipltech/whatkernel.git
 cd whatkernel
 ./install.sh --prefix /root
-```
-
-Install without Codex skill files:
-
-```bash
-./install.sh --prefix /root --no-codex-skill
 ```
 
 Install and run a one-kernel smoke test:
@@ -44,134 +40,154 @@ Install and run a one-kernel smoke test:
 ./install.sh --prefix /root --smoke
 ```
 
-## Codex Quick Start
-
-This repository is primarily intended for Codex users. After installation, ask Codex to run the skill directly:
+`install.sh` installs both the runtime helper and the Codex skill:
 
 ```text
-whatkernel dlcasmprinter
+/root/bin/whatkernel
+/root/tools/whatkernel
+/root/.codex/skills/whatkernel/SKILL.md
+```
+
+If Codex does not pick up the skill immediately, start a new Codex session after installation.
+
+## Use From Codex
+
+Ask Codex directly:
+
+```text
+whatkernel dlc-machine-cse
 ```
 
 or:
 
 ```text
-/whatkernel dlcasmprinter
+/whatkernel dlc-machine-cse
 ```
 
-Codex will use the installed skill at:
-
-```text
-/root/.codex/skills/whatkernel/SKILL.md
-```
-
-and run the local helper:
+Codex will run:
 
 ```bash
-/root/bin/whatkernel dlcasmprinter
+/root/bin/whatkernel dlc-machine-cse
 ```
 
-Codex should summarize:
+and summarize:
 
 - candidate kernel count
-- top kernels by counter descending
+- top kernels ranked by the primary counter
 - output directory for full artifacts
 - compile failures, missing stats, or unknown-pass issues
 
-### Common Codex Requests
+## Common Codex Requests
 
-Run a full pass scan:
-
-```text
-whatkernel dlcasmprinter
-```
-
-Run a quick smoke test:
+Quick smoke test:
 
 ```text
-whatkernel dlcasmprinter --limit 1 --jobs 1 --top 5
+whatkernel dlc-machine-cse --limit 1 --jobs 1 --top 5
 ```
 
-Focus on kernels whose path/name contains a selector:
+Focus on a kernel family:
 
 ```text
-whatkernel dlcmachinepipeliner --source gptq_gemm --jobs 1 --top 20
+whatkernel dlc-machine-cse --source gptq_gemm --jobs 1 --top 20
 ```
 
-Keep raw stats JSON for deeper follow-up:
+Keep raw stats JSON for follow-up analysis:
 
 ```text
-whatkernel dlcasmprinter --artifacts stats --top 20
+whatkernel dlc-machine-cse --artifacts stats --top 20
 ```
 
-Re-summarize an existing run without recompiling:
+Keep all compile commands, stdout/stderr, asm, and stats:
 
 ```text
-whatkernel dlcasmprinter --out-dir /tmp/whatkernel/dlcasmprinter/<run-id> --summarize-existing
+whatkernel dlc-machine-cse --artifacts debug --limit 5 --jobs 1
 ```
 
-Ask Codex to inspect the generated report:
+Rebuild a report from an existing run without recompiling:
+
+```text
+whatkernel dlc-machine-cse --out-dir /tmp/whatkernel/dlc-machine-cse/<run-id> --summarize-existing
+```
+
+Ask Codex to inspect the generated artifacts:
 
 ```text
 Open the report from the last whatkernel run and summarize the top candidate kernels.
 ```
 
-### Useful Options
+## Useful Options
 
 - `--source <selector>`: limit to source paths, stems, or basenames containing the selector. Can be repeated.
 - `--limit <N>`: process only the first `N` selected kernel sources; useful for smoke tests.
 - `--jobs <N>`: parallel compile jobs. Default is `8`; use `1` for easier debugging.
 - `--top <N>`: number of top candidate kernels to print. Default is `20`.
-- `--artifacts summary`: keep only report and structured summary files. This is the default.
-- `--artifacts stats`: also keep raw stats JSON files.
+- `--artifacts summary`: keep only reports and structured summaries. This is the default.
+- `--artifacts stats`: also keep raw stats JSON.
 - `--artifacts debug`: keep commands, stdout, stderr, assembly, and stats for every processed kernel.
 - `--out-dir <dir>`: write or re-read a specific run directory.
 - `--summarize-existing`: regenerate summary/report from an existing output directory without recompiling.
 - `--refresh-auto`: refresh auto-discovered pass metadata before running.
 - `--llvm <dir>`, `--repo <dir>`, `--build-dir <dir>`: override default checkout/build paths.
 
-## Direct CLI Usage
+## Non-`/root` Layouts
 
-Codex normally runs these commands for you, but direct shell usage is also supported.
-
-List registered passes:
+If your workspace is not under `/root`, install with a different prefix:
 
 ```bash
-/root/bin/whatkernel --list-passes
+./install.sh --prefix /home/alice
 ```
 
-Run a small smoke test:
+This installs:
 
-```bash
-/root/bin/whatkernel dlcasmprinter --limit 1 --jobs 1 --top 5
+```text
+/home/alice/bin/whatkernel
+/home/alice/tools/whatkernel
+/home/alice/.codex/skills/whatkernel/SKILL.md
 ```
 
-Run a full pass scan:
+`install.sh` rewrites the installed Codex skill paths for that prefix, so Codex calls `/home/alice/bin/whatkernel` instead of `/root/bin/whatkernel`.
 
-```bash
-/root/bin/whatkernel dlcasmprinter --jobs 8 --top 20
+If LLVM or DLC custom kernels are also elsewhere, pass explicit paths in the Codex request:
+
+```text
+whatkernel dlc-machine-cse --llvm /home/alice/LLVM --repo /home/alice/DLC_Custom_Kernel --build-dir /home/alice/DLC_Custom_Kernel/build
 ```
 
-Keep raw stats JSON:
+Direct CLI equivalent:
 
 ```bash
-/root/bin/whatkernel dlcasmprinter --artifacts stats --top 20
+/home/alice/bin/whatkernel dlc-machine-cse \
+  --llvm /home/alice/LLVM \
+  --repo /home/alice/DLC_Custom_Kernel \
+  --build-dir /home/alice/DLC_Custom_Kernel/build
 ```
 
-Re-summarize an existing run without recompiling:
+For repeated use, prefer a shared team layout or a small wrapper script that includes the path overrides.
 
-```bash
-/root/bin/whatkernel dlcasmprinter \
-  --out-dir /tmp/whatkernel/dlcasmprinter/<run-id> \
-  --summarize-existing
+## Pass Requirements
+
+`whatkernel` is stats-only. The target pass must expose at least one LLVM `STATISTIC(...)` counter.
+
+For example, `/root/LLVM/llvm/lib/Target/DLC/DLCMachineCSE.cpp` has counters such as:
+
+```cpp
+STATISTIC(NumCSEsDLC, "Number of common subexpression eliminated");
 ```
 
-If your LLVM or DLC custom kernel checkout is not under `/root`, pass explicit paths:
+Passes without `STATISTIC(...)` cannot be ranked by `whatkernel`. Add a meaningful counter to the pass first, rebuild LLVM, then rerun `whatkernel`.
 
-```bash
-/root/bin/whatkernel <pass> \
-  --llvm /path/to/LLVM \
-  --repo /path/to/DLC_Custom_Kernel \
-  --build-dir /path/to/DLC_Custom_Kernel/build
+Typical workflow for a no-counter pass:
+
+1. Add `#include "llvm/ADT/Statistic.h"` if needed.
+2. Add one or more `STATISTIC(...)` counters near the pass' other file-level definitions.
+3. Increment the counter at the transformation point you care about.
+4. Rebuild clang, for example `ninja -C /root/LLVM/build clang`.
+5. Run `whatkernel <pass>` again.
+
+If a pass has no counters, `whatkernel` fails clearly instead of falling back to assembly diffing:
+
+```text
+pass 'dlc-peephole' has no STATISTIC counters; stats-only whatkernel requires at least one pass counter
 ```
 
 ## Output
@@ -193,32 +209,21 @@ compile_command_manifest.txt
 discovered_pass_config.json
 ```
 
-Artifact levels:
+Useful fields:
 
-- `summary`: keep only reports and structured summaries.
-- `stats`: also keep raw stats JSON.
-- `debug`: keep all per-kernel command/stdout/stderr/assembly files.
+- `candidate=yes`: at least one configured candidate counter met the threshold.
+- `primary counter`: the counter used to rank kernels.
+- `inconclusive`: compile failed, stats were missing, or the pass could not be resolved.
 
-## Stats-Only Behavior
+## Direct CLI
 
-`whatkernel` requires the pass source to expose at least one LLVM `STATISTIC(...)` counter. Passes without counters are unsupported and fail with a clear message, for example:
+Codex normally runs the helper for you, but direct CLI usage is supported:
 
-```text
-pass 'dlc-peephole' has no STATISTIC counters; stats-only whatkernel requires at least one pass counter
+```bash
+/root/bin/whatkernel --list-passes
+/root/bin/whatkernel dlc-machine-cse --limit 1 --jobs 1 --top 5
+/root/bin/whatkernel dlc-machine-cse --jobs 8 --top 20
 ```
-
-There is no assembly diff fallback mode.
-
-## Installed Codex Skill Files
-
-`install.sh` installs the Codex skill by default:
-
-```text
-/root/.codex/skills/whatkernel/SKILL.md
-/root/.codex/skills/whatkernel/agents/openai.yaml
-```
-
-If Codex does not pick up the skill immediately, start a new Codex session after installation.
 
 ## Development Checks
 
@@ -227,5 +232,5 @@ From this repository:
 ```bash
 python3 -m py_compile tools/whatkernel/collect_pass_stats.py tools/whatkernel/whatkernel.py
 bin/whatkernel --list-passes
-bin/whatkernel dlcasmprinter --limit 1 --jobs 1 --top 5 --artifacts summary
+bin/whatkernel dlc-machine-cse --limit 1 --jobs 1 --top 5 --artifacts summary
 ```

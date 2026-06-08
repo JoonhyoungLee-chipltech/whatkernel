@@ -67,8 +67,22 @@ install_file "$repo_dir/tools/whatkernel/pass_registry.auto.yaml" "$prefix/tools
 install_file "$repo_dir/docs/whatkernel.md" "$prefix/docs/pass/whatkernel.md"
 
 if [[ "$install_codex_skill" -eq 1 ]]; then
-  install_file "$repo_dir/codex/skills/whatkernel/SKILL.md" "$prefix/.codex/skills/whatkernel/SKILL.md"
+  skill_dst="$prefix/.codex/skills/whatkernel/SKILL.md"
+  install_file "$repo_dir/codex/skills/whatkernel/SKILL.md" "$skill_dst"
   install_file "$repo_dir/codex/skills/whatkernel/agents/openai.yaml" "$prefix/.codex/skills/whatkernel/agents/openai.yaml"
+  if [[ "$prefix" != "/root" ]]; then
+    python3 - "$skill_dst" "$prefix" <<'PYEDIT'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+prefix = sys.argv[2].rstrip("/") or "/"
+text = path.read_text(encoding="utf-8")
+text = text.replace("/root/bin/whatkernel", f"{prefix}/bin/whatkernel")
+text = text.replace("/root/tools/whatkernel", f"{prefix}/tools/whatkernel")
+text = text.replace("/root/docs/pass/whatkernel.md", f"{prefix}/docs/pass/whatkernel.md")
+path.write_text(text, encoding="utf-8")
+PYEDIT
+  fi
 fi
 
 python3 -m py_compile \
