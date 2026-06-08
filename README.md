@@ -52,22 +52,30 @@ If Codex does not pick up the skill immediately, start a new Codex session after
 
 ## Use From Codex
 
-Ask Codex directly:
+Ask Codex directly with the pass source filename:
 
 ```text
-whatkernel dlc-machine-cse
+whatkernel DLCMachineCSE.cpp
 ```
 
-or:
+The `.cpp` suffix is optional, so this also works:
 
 ```text
-/whatkernel dlc-machine-cse
+whatkernel DLCMachineCSE
+```
+
+Do not use `DEBUG_TYPE` as the input key. Multiple source files can share the same debug type, so `whatkernel` resolves passes by source filename/stem.
+
+Slash form is also supported:
+
+```text
+/whatkernel DLCMachineCSE.cpp
 ```
 
 Codex will run:
 
 ```bash
-/root/bin/whatkernel dlc-machine-cse
+/root/bin/whatkernel DLCMachineCSE.cpp
 ```
 
 and summarize:
@@ -82,31 +90,31 @@ and summarize:
 Quick smoke test:
 
 ```text
-whatkernel dlc-machine-cse --limit 1 --jobs 1 --top 5
+whatkernel DLCMachineCSE.cpp --limit 1 --jobs 1 --top 5
 ```
 
 Focus on a kernel family:
 
 ```text
-whatkernel dlc-machine-cse --source gptq_gemm --jobs 1 --top 20
+whatkernel DLCMachineCSE.cpp --source gptq_gemm --jobs 1 --top 20
 ```
 
 Keep raw stats JSON for follow-up analysis:
 
 ```text
-whatkernel dlc-machine-cse --artifacts stats --top 20
+whatkernel DLCMachineCSE.cpp --artifacts stats --top 20
 ```
 
 Keep all compile commands, stdout/stderr, asm, and stats:
 
 ```text
-whatkernel dlc-machine-cse --artifacts debug --limit 5 --jobs 1
+whatkernel DLCMachineCSE.cpp --artifacts debug --limit 5 --jobs 1
 ```
 
 Rebuild a report from an existing run without recompiling:
 
 ```text
-whatkernel dlc-machine-cse --out-dir /tmp/whatkernel/dlc-machine-cse/<run-id> --summarize-existing
+whatkernel DLCMachineCSE.cpp --out-dir /tmp/whatkernel/DLCMachineCSE/<run-id> --summarize-existing
 ```
 
 Ask Codex to inspect the generated artifacts:
@@ -150,13 +158,13 @@ This installs:
 If LLVM or DLC custom kernels are also elsewhere, pass explicit paths in the Codex request:
 
 ```text
-whatkernel dlc-machine-cse --llvm /home/alice/LLVM --repo /home/alice/DLC_Custom_Kernel --build-dir /home/alice/DLC_Custom_Kernel/build
+whatkernel DLCMachineCSE.cpp --llvm /home/alice/LLVM --repo /home/alice/DLC_Custom_Kernel --build-dir /home/alice/DLC_Custom_Kernel/build
 ```
 
 Direct CLI equivalent:
 
 ```bash
-/home/alice/bin/whatkernel dlc-machine-cse \
+/home/alice/bin/whatkernel DLCMachineCSE.cpp \
   --llvm /home/alice/LLVM \
   --repo /home/alice/DLC_Custom_Kernel \
   --build-dir /home/alice/DLC_Custom_Kernel/build
@@ -166,7 +174,7 @@ For repeated use, prefer a shared team layout or a small wrapper script that inc
 
 ## Pass Requirements
 
-`whatkernel` is stats-only. The target pass must expose at least one LLVM `STATISTIC(...)` counter.
+`whatkernel` is stats-only and filename-based. The target pass must be selected by source filename/stem and must expose at least one LLVM `STATISTIC(...)` counter.
 
 For example, `/root/LLVM/llvm/lib/Target/DLC/DLCMachineCSE.cpp` has counters such as:
 
@@ -221,8 +229,8 @@ Codex normally runs the helper for you, but direct CLI usage is supported:
 
 ```bash
 /root/bin/whatkernel --list-passes
-/root/bin/whatkernel dlc-machine-cse --limit 1 --jobs 1 --top 5
-/root/bin/whatkernel dlc-machine-cse --jobs 8 --top 20
+/root/bin/whatkernel DLCMachineCSE.cpp --limit 1 --jobs 1 --top 5
+/root/bin/whatkernel DLCMachineCSE.cpp --jobs 8 --top 20
 ```
 
 ## Development Checks
@@ -232,5 +240,5 @@ From this repository:
 ```bash
 python3 -m py_compile tools/whatkernel/collect_pass_stats.py tools/whatkernel/whatkernel.py
 bin/whatkernel --list-passes
-bin/whatkernel dlc-machine-cse --limit 1 --jobs 1 --top 5 --artifacts summary
+bin/whatkernel DLCMachineCSE.cpp --limit 1 --jobs 1 --top 5 --artifacts summary
 ```

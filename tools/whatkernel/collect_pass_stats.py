@@ -136,7 +136,6 @@ class PassConfig:
             "source_file": self.source_file,
             "class_name": self.class_name,
             "registration_name": self.registration_name,
-            "debug_type": self.debug_type,
             "enable_args": self.enable_args,
             "isolation_kind": self.isolation_kind,
             "counters": self.available_counters(),
@@ -426,7 +425,6 @@ def build_alias_map(curated: dict[str, PassConfig], auto: dict[str, PassConfig])
             for alias in config.all_names():
                 mapping.setdefault(alias, config)
                 mapping.setdefault(normalize_name(alias), config)
-                mapping.setdefault(normalize_compact(alias), config)
     return mapping
 
 
@@ -446,11 +444,9 @@ def add_alias_variants(values: Iterable[str]) -> list[str]:
             continue
         aliases.append(value)
         aliases.append(normalize_name(value))
-        aliases.append(normalize_compact(value))
         if value.endswith("Pass"):
             aliases.append(value[: -4])
             aliases.append(normalize_name(value[: -4]))
-            aliases.append(normalize_compact(value[: -4]))
     return unique_strings(aliases)
 
 
@@ -540,9 +536,6 @@ def score_pipeline_entry(input_name: str, normalized_input: str, entry: Pipeline
         return 118
     if normalized_input == normalize_name(entry.class_token):
         return 116
-    compact = normalize_compact(entry.class_token)
-    if normalize_compact(input_name) == compact:
-        return 114
     if entry.class_token.endswith("Pass") and normalize_name(entry.class_token[: -4]) == normalized_input:
         return 112
     return -1
@@ -552,7 +545,6 @@ def score_source_metadata(input_name: str, normalized_input: str, meta: SourcePa
     raw_input = input_name.lower()
     stem_input = strip_cpp_suffix(input_name)
     normalized_stem_input = normalize_name(stem_input)
-    compact_stem_input = normalize_compact(stem_input)
 
     if raw_input == meta.source_file.name.lower():
         return 130
@@ -562,15 +554,11 @@ def score_source_metadata(input_name: str, normalized_input: str, meta: SourcePa
         return 126
     if normalized_stem_input == normalize_name(meta.file_stem):
         return 124
-    if compact_stem_input == normalize_compact(meta.file_stem):
-        return 122
     return -1
 
 
 def pick_canonical_from_meta(meta: SourcePassMetadata) -> str:
-    if meta.registration_names:
-        return normalize_name(meta.registration_names[0])
-    return normalize_name(meta.file_stem)
+    return meta.file_stem
 
 
 def select_enable_args(meta: SourcePassMetadata, canonical_name: str) -> list[str]:
@@ -677,39 +665,13 @@ def discover_pass(pass_name: str, llvm: Path, preferred_source: str = "") -> Pas
             aliases=[meta.source_file.name, meta.file_stem],
         )
 
-    pipeline_candidates: list[tuple[int, PipelineEntry]] = []
-    for entry in pipeline_entries:
-        score = score_pipeline_entry(pass_name, normalized_input, entry)
-        if score >= 0:
-            pipeline_candidates.append((score, entry))
-    if pipeline_candidates:
-        pipeline_candidates.sort(key=lambda item: (-item[0], item[1].pipeline_name))
-        top_score = pipeline_candidates[0][0]
-        top_entries = [entry for score, entry in pipeline_candidates if score == top_score]
-        if len(top_entries) == 1 and top_entries[0].source_file is not None:
-            source_file = top_entries[0].source_file
-            meta = next(meta for meta in metas if meta.source_file == source_file)
-            return finalize_discovered_config(
-                canonical_name=top_entries[0].pipeline_name,
-                description=f"Auto-discovered pipeline pass from {source_file}",
-                meta=meta,
-                registry_kind="auto",
-                auto_generated=True,
-                aliases=[
-                    top_entries[0].pipeline_name,
-                    top_entries[0].class_token,
-                    meta.source_file.name,
-                    meta.file_stem,
-                ],
-            )
-
     source_candidates: list[tuple[int, SourcePassMetadata]] = []
     for meta in metas:
         score = score_source_metadata(pass_name, normalized_input, meta)
         if score >= 0:
             source_candidates.append((score, meta))
     if not source_candidates:
-        raise RuntimeError(f"could not discover pass metadata for {pass_name!r}")
+        raise RuntimeError(f"could not discover pass metadata for {pass_name!r}; use the pass source filename/stem, e.g. DLCMachineCSE.cpp, not DEBUG_TYPE")
 
     source_candidates.sort(key=lambda item: (-item[0], str(item[1].source_file)))
     top_score = source_candidates[0][0]
@@ -777,7 +739,7 @@ def resolve_pass_config(
     curated = load_registry_file(curated_path, "curated")
     auto = load_registry_file(auto_path, "auto")
     alias_map = build_alias_map(curated, auto)
-    config = alias_map.get(pass_name) or alias_map.get(normalize_name(pass_name)) or alias_map.get(normalize_compact(pass_name))
+    config = alias_map.get(pass_name) or alias_map.get(normalize_name(pass_name))
     auto_registered = False
     refreshed_on_run = False
 

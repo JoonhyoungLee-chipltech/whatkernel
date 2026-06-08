@@ -5,20 +5,20 @@ description: Use when the user asks which DLC custom kernels a pass targets, ask
 
 # whatkernel
 
-Trigger this skill when the user says `whatkernel <pass>`, `/whatkernel <pass>`, or asks for the ranked DLC kernels hit by a compiler pass.
+Trigger this skill when the user says `whatkernel <pass-source-file>`, `/whatkernel <pass-source-file>`, or asks for the ranked DLC kernels hit by a compiler pass. Use pass source filenames/stems such as `DLCMachineCSE.cpp` or `DLCMachineCSE`; do not use `DEBUG_TYPE` as the input key.
 
 ## Required action
 
 Run the local helper instead of explaining the workflow from memory:
 
 ```bash
-/root/bin/whatkernel <pass> [flags]
+/root/bin/whatkernel <pass-source-file> [flags]
 ```
 
 ## Workflow
 
-1. Resolve the pass name or alias from `/root/tools/whatkernel/pass_registry.yaml`.
-2. Execute `/root/bin/whatkernel <pass> [flags]`.
+1. Resolve the pass source filename/stem from the registry cache or by scanning DLC pass source files.
+2. Execute `/root/bin/whatkernel <pass-source-file> [flags]`.
 3. Summarize:
    - candidate kernel count
    - top kernels by counter descending
@@ -28,10 +28,10 @@ Run the local helper instead of explaining the workflow from memory:
 
 ## Good defaults
 
-- Fresh run: `/root/bin/whatkernel loop-fusion --top 20`
-- Keep raw stats: `/root/bin/whatkernel loop-fusion --artifacts stats --top 20`
-- Single-kernel smoke run: `/root/bin/whatkernel loop-fusion --source gptq_gemm --jobs 1`
-- Re-summarize existing output: `/root/bin/whatkernel loop-fusion --out-dir <run-dir> --summarize-existing`
+- Fresh run: `/root/bin/whatkernel DLCMachineCSE.cpp --top 20`
+- Keep raw stats: `/root/bin/whatkernel DLCMachineCSE.cpp --artifacts stats --top 20`
+- Single-kernel smoke run: `/root/bin/whatkernel DLCMachineCSE.cpp --source gptq_gemm --jobs 1`
+- Re-summarize existing output: `/root/bin/whatkernel DLCMachineCSE.cpp --out-dir <run-dir> --summarize-existing`
 
 ## Notes
 

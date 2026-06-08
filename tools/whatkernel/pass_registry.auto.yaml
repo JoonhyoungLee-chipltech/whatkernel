@@ -1,18 +1,14 @@
 {
-  "dlc-machine-cse": {
+  "DLCMachineCSE": {
     "description": "Auto-discovered pass from /root/LLVM/llvm/lib/Target/DLC/DLCMachineCSE.cpp",
     "aliases": [
-      "dlc-machine-cse",
-      "dlcmachinecse",
-      "DLCMachineCSELegacy",
-      "dlcmachinecselegacy",
+      "DLCMachineCSE.cpp",
       "DLCMachineCSE"
     ],
     "mode": "stats",
     "source_file": "/root/LLVM/llvm/lib/Target/DLC/DLCMachineCSE.cpp",
     "class_name": "DLCMachineCSELegacy",
     "registration_name": "",
-    "debug_type": "dlc-machine-cse",
     "enable_args": [],
     "isolation_kind": "default_pipeline_stats",
     "counters": [
@@ -39,24 +35,16 @@
     "source_fingerprint": "5e8e08ccbf29401e01b1b6f6e6f23e1cb0d4230b3267152d2cae881595688f3f",
     "last_refreshed_utc": "20260529T094258Z"
   },
-  "dlc-postra-machine-sink": {
+  "DLCMachineSink": {
     "description": "Auto-discovered pass from /root/LLVM/llvm/lib/Target/DLC/DLCMachineSink.cpp",
     "aliases": [
-      "dlc-postra-machine-sink",
-      "dlcpostramachinesink",
-      "dlc-machine-sink",
-      "dlcmachinesink",
-      "DLCMachineSinkingLegacy",
-      "dlcmachinesinkinglegacy",
-      "DLCPostRAMachineSinkingLegacy",
-      "dlcpostramachinesinkinglegacy",
+      "DLCMachineSink.cpp",
       "DLCMachineSink"
     ],
     "mode": "stats",
     "source_file": "/root/LLVM/llvm/lib/Target/DLC/DLCMachineSink.cpp",
     "class_name": "DLCMachineSinkingLegacy",
     "registration_name": "dlc-postra-machine-sink",
-    "debug_type": "dlc-machine-sink",
     "enable_args": [],
     "isolation_kind": "default_pipeline_stats",
     "counters": [
@@ -92,19 +80,16 @@
     "source_fingerprint": "dab0cb70a8af9e946fe2ae9b07d1e27ef2ea452ad53ada6de52f6c0160c47476",
     "last_refreshed_utc": "20260527T101822Z"
   },
-  "dlcasmprinter": {
+  "DLCAsmPrinter": {
     "description": "Auto-discovered pass from /root/LLVM/llvm/lib/Target/DLC/DLCAsmPrinter.cpp",
     "aliases": [
       "DLCAsmPrinter.cpp",
-      "DLCAsmPrinter",
-      "dlcasmprinter.cpp",
-      "dlcasmprinter"
+      "DLCAsmPrinter"
     ],
     "mode": "stats",
     "source_file": "/root/LLVM/llvm/lib/Target/DLC/DLCAsmPrinter.cpp",
     "class_name": "",
     "registration_name": "",
-    "debug_type": "asm-printer",
     "enable_args": [],
     "isolation_kind": "default_pipeline_stats",
     "counters": [
@@ -121,20 +106,16 @@
     "source_fingerprint": "9a341b3e5ee4a63af02e6e0b2f5f9ea5a72696d31d7abcf96275d2f23ec39fd5",
     "last_refreshed_utc": "20260605T094027Z"
   },
-  "dlcmachinepipeliner": {
+  "DLCMachinePipeliner": {
     "description": "Auto-discovered pass from /root/LLVM/llvm/lib/Target/DLC/DLCMachinePipeliner.cpp",
     "aliases": [
       "DLCMachinePipeliner.cpp",
-      "dlcmachinepipeliner-cpp",
-      "dlcmachinepipelinercpp",
-      "DLCMachinePipeliner",
-      "dlcmachinepipeliner"
+      "DLCMachinePipeliner"
     ],
     "mode": "stats",
     "source_file": "/root/LLVM/llvm/lib/Target/DLC/DLCMachinePipeliner.cpp",
     "class_name": "",
     "registration_name": "",
-    "debug_type": "pipeliner",
     "enable_args": [],
     "isolation_kind": "default_pipeline_stats",
     "counters": [
@@ -163,36 +144,5 @@
     "auto_generated": true,
     "source_fingerprint": "6871c5530b326e1f4f4a9a89f27ba1f2b58a03d0e0ff4adb7ca69ad0f9e521cb",
     "last_refreshed_utc": "20260608T082918Z"
-  },
-  "slsr": {
-    "description": "Auto-discovered pipeline pass from /root/LLVM/llvm/lib/Transforms/Scalar/StraightLineStrengthReduce.cpp",
-    "aliases": [
-      "slsr",
-      "StraightLineStrengthReducePass",
-      "straightlinestrengthreducepass",
-      "StraightLineStrengthReduce",
-      "straightlinestrengthreduce"
-    ],
-    "mode": "stats",
-    "source_file": "/root/LLVM/llvm/lib/Transforms/Scalar/StraightLineStrengthReduce.cpp",
-    "class_name": "StraightLineStrengthReduceLegacyPass",
-    "registration_name": "slsr",
-    "debug_type": "slsr",
-    "enable_args": [],
-    "isolation_kind": "default_pipeline_stats",
-    "counters": [
-      "NumSLSRFunctionsChanged",
-      "NumSLSRRewrites"
-    ],
-    "selected_counter": "NumSLSRFunctionsChanged",
-    "candidate_counters": [
-      "NumSLSRFunctionsChanged"
-    ],
-    "counter_groups": {},
-    "counter_match_mode": "suffix",
-    "positive_threshold": 1,
-    "auto_generated": true,
-    "source_fingerprint": "ec11f9aa6a41ff6c816a03201820b53396819cf4b215044e22ec582ce908c6d1",
-    "last_refreshed_utc": "20260528T033351Z"
   }
 }

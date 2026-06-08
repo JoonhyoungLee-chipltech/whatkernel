@@ -11,7 +11,7 @@ It is intended for quick pass bring-up, rollout planning, and follow-up kernel a
 Run it with a DLC pass source filename, case-insensitively. The `.cpp` suffix is optional.
 
 ```bash
-/root/bin/whatkernel dlcasmprinter
+/root/bin/whatkernel DLCMachineCSE.cpp
 /root/bin/whatkernel DLCAsmPrinter.cpp
 ```
 
@@ -19,20 +19,20 @@ Useful options:
 
 ```bash
 # Limit to kernels whose source path/name contains a selector
-/root/bin/whatkernel dlcasmprinter --source flash_attention
+/root/bin/whatkernel DLCMachineCSE.cpp --source flash_attention
 
 # Fast smoke test
-/root/bin/whatkernel dlcasmprinter --limit 20
+/root/bin/whatkernel DLCMachineCSE.cpp --limit 20
 
 # Keep raw stats JSON for deeper debugging
-/root/bin/whatkernel dlcasmprinter --artifacts stats
+/root/bin/whatkernel DLCMachineCSE.cpp --artifacts stats
 
 # Keep all raw per-kernel files, including asm/cmd/stdout/stderr
-/root/bin/whatkernel dlcasmprinter --artifacts debug
+/root/bin/whatkernel DLCMachineCSE.cpp --artifacts debug
 
 # Rebuild a report from an existing output directory without recompiling
-/root/bin/whatkernel dlcasmprinter \
-  --out-dir /tmp/whatkernel/dlcasmprinter/<run-id> \
+/root/bin/whatkernel DLCMachineCSE.cpp \
+  --out-dir /tmp/whatkernel/DLCMachineCSE/<run-id> \
   --summarize-existing
 ```
 
@@ -57,12 +57,12 @@ Examples:
 
 | Input | Matches |
 | --- | --- |
-| `dlcasmprinter` | `DLCAsmPrinter.cpp` |
-| `DLCAsmPrinter` | `DLCAsmPrinter.cpp` |
-| `dlcasmprinter.cpp` | `DLCAsmPrinter.cpp` |
-| `DLCASMPRINTER.CPP` | `DLCAsmPrinter.cpp` |
+| `DLCMachineCSE.cpp` | `DLCMachineCSE.cpp` |
+| `DLCMachineCSE` | `DLCMachineCSE.cpp` |
+| `dlcmachinecse.cpp` | `DLCMachineCSE.cpp` |
+| `DLCMACHINECSE.CPP` | `DLCMachineCSE.cpp` |
 
-`DEBUG_TYPE` is not used as the user-facing input key. For example, `asm-printer` is ambiguous across printer files, so use `dlcasmprinter` instead.
+`DEBUG_TYPE` is not used as the user-facing input key because multiple source files can share the same debug type. Use the pass source filename or stem, for example `DLCMachineCSE.cpp` or `DLCMachineCSE`.
 
 Stats-only `whatkernel` requires the pass source to expose at least one `STATISTIC(...)` counter. Passes without counters are reported as unsupported instead of falling back to assembly diffing.
 
@@ -117,7 +117,7 @@ Per-kernel results are written to each run directory and are recomputed on a new
 Each run writes a directory like:
 
 ```text
-/tmp/whatkernel/dlcasmprinter/20260605T094905Z/
+/tmp/whatkernel/DLCMachineCSE/20260605T094905Z/
 ```
 
 Always-kept files:

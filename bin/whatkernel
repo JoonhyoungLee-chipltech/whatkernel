@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-exec python3 /root/tools/whatkernel/whatkernel.py "$@"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec python3 "$script_dir/../tools/whatkernel/whatkernel.py" "$@"
