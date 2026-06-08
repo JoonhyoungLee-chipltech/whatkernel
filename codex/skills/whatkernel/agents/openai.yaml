@@ -1,0 +1,4 @@
+interface:
+  display_name: "WhatKernel"
+  short_description: "Run whatkernel for a compiler pass"
+  default_prompt: "Use $whatkernel to run /root/bin/whatkernel for a DLC compiler pass and summarize candidate kernels."
