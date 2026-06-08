@@ -64,6 +64,8 @@ The `.cpp` suffix is optional, so this also works:
 whatkernel DLCMachineCSE
 ```
 
+Also, capital and small letter does not matter. DLCmachinecse, dlcmachinecse, ... all works.
+
 Do not use `DEBUG_TYPE` as the input key. Multiple source files can share the same debug type, so `whatkernel` resolves passes by source filename/stem.
 
 Slash form is also supported:
